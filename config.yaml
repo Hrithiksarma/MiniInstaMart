@@ -1,0 +1,16 @@
+# One place for paths, seeds and simulator knobs.
+# The "effects" block under simulator is the ground truth we later check the model against (B9).
+seed: 42
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  docs: docs
+
+simulator:
+  n_orders: 500000
+  n_stores: 200
+  n_zones: 20
+  # filled in properly in Phase 1
+  effects: {}
