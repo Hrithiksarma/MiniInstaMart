@@ -15,7 +15,7 @@ test:
 	pytest --cov --cov-report=term-missing
 
 data:
-	@echo "data pipeline arrives in Phase 1"
+	$(PY) -m simulator.orders
 
 train:
 	@echo "training arrives in Phase 5"

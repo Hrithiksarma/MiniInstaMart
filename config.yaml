@@ -10,7 +10,63 @@ paths:
 
 simulator:
   n_orders: 500000
-  n_stores: 200
-  n_zones: 20
-  # filled in properly in Phase 1
-  effects: {}
+  n_cities: 4
+  zones_per_city: 5
+  stores_per_zone: 10
+  start_date: "2026-01-05"   # a Monday
+  n_days: 90
+  peak_hours: [12, 13, 19, 20, 21]
+  weekend_demand_multiplier: 1.2
+
+  # Weather: each city gets rain on some days, for a contiguous block of hours
+  rain:
+    rain_day_prob: 0.25
+    min_hours: 2
+    max_hours: 8
+
+  # delivery_time = prep + rider_wait + travel + handover (all in minutes)
+  # These numbers ARE the truth the ETA model should rediscover.
+  effects:
+    prep:
+      store_base_mean_min: 6.0       # average store's base prep time
+      store_base_sd_log: 0.20        # how much stores differ from each other
+      per_item_min: 0.45             # each extra item adds this
+      per_queued_order_min: 0.60     # each order placed in the store in the last 30 min
+      peak_multiplier: 1.15          # stores are slower at peak hours
+      noise_sigma_log: 0.25
+    rider:
+      base_wait_min: 2.0
+      wait_per_pressure_min: 1.2     # pressure = zone orders this hour / riders on shift
+      rain_add_min: 1.5
+      rain_peak_interaction_min: 2.0 # extra wait only when it is raining AND peak hour
+      riders_per_zone_mean: 10
+      peak_rider_boost: 1.3
+    travel:
+      road_circuity: 1.3             # road distance = straight line x this
+      speed_kmph: 22
+      rain_speed_multiplier: 0.80
+      traffic_slowdown: 0.25         # speed x (1 - this x traffic_index)
+      noise_sigma_log: 0.15
+    handover:
+      gamma_shape: 3.0
+      gamma_scale_min: 0.7
+    distance:
+      gamma_shape: 2.5               # customer distance from store (km, straight line)
+      gamma_scale_km: 0.8
+      min_km: 0.2
+      max_km: 8.0
+
+  # Defects injected into the raw file on purpose (D2). Cleaning in Phase 2 must find them.
+  defects:
+    missing_weather_rate: 0.04
+    impossible_distance_rate: 0.003
+    negative_time_rate: 0.002
+    duplicate_rate: 0.01
+
+  # Same world with a different regime, saved separately, replayed in Phase 8 for drift alerts.
+  drift:
+    n_orders: 100000
+    n_days: 18                   # same order density as the normal run (100k / 500k x 90 days)
+    rain_day_prob: 0.45
+    riders_scale: 0.75
+    speed_multiplier: 0.9
